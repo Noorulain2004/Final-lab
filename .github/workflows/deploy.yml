@@ -12,16 +12,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
+      # Setup SSH step hata diya gaya hai.
+      
       - name: Deploy Docker Containers on Azure VM
         uses: appleboy/ssh-action@v1.0.1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
+          # ✅ Yahi woh line hai jo add karni thi
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
           script: |
             cd ~/Final-lab
             git pull
