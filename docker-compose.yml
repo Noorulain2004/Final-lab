@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # 1. MongoDB Database Service
+  mongo:
+    image: mongo:latest
+    container_name: mongodb_todo
+    # Data ko VM mein save karne ke liye
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  # 2. Node.js Backend Service
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: todo_backend
+    ports:
+      - "5000:5000" # VM:5000 -> Container:5000
+    depends_on:
+      - mongo
+    environment:
+      # Connection string jo backend code mein use hogi
+      # 'mongo' yahan container ka naam hai (dekhlein 'mongo' service ka naam)
+      - MONGO_URI=mongodb://mongo:27017/my-todo-app
+    restart: always
+
+  # 3. React Frontend Service
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: todo_frontend
+    ports:
+      - "80:80" # VM:80 -> Container:80 (Standard HTTP port)
+    depends_on:
+      - backend
+    restart: always
+
+# Persistent data store (Data delete nahi hoga agar container band ho jaye)
+volumes:
+  mongo-data:

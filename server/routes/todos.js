@@ -31,8 +31,7 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-// @route   DELETE api/todos/:id
-// @desc    Delete todo
+
 router.delete('/:id', auth, async (req, res) => {
     try {
         let todo = await Todo.findById(req.params.id);
