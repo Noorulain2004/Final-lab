@@ -4,6 +4,7 @@ const connectDB = async () => {
     try {
         // Local MongoDB URL. Agar Cloud use kar rahe hain to wahan ka link dalen.
         const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/my-todo-app';
+        await mongoose.connect(mongoURI);
         console.log('MongoDB Connected Successfully...');
     } catch (err) {
         console.error(err.message);
