@@ -13,7 +13,7 @@ function Register({ setAuth }) {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/register', formData);
+      const res = await axios.post('http://4.213.157.248:5000/api/register', formData);
       setAuth(res.data.token);
     } catch (err) {
       // Backend se error message pakdo (e.g. "User already exists")
