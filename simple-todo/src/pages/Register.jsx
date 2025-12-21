@@ -28,7 +28,6 @@ function Register({ setAuth }) {
       <div className="auth-card">
         <div className="auth-header">
           <h2>Join SuperTodo 🚀 for testing</h2>
-          <h2>noor</h2>
           <p>Start organizing your life today.</p>
         </div>
 
