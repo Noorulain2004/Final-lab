@@ -7,7 +7,7 @@ function Home() {
       {/* --- NEW HERO SECTION --- */}
       <header className="hero-section">
         <div className="hero-content">
-          <span className="badge">SuperTodo - Automated V3.0</span>
+          <span className="badge">SuperTodo - Automated V3.0 Noor </span>
           <h1>Organize Your Work <br /> <span className="highlight">Dominate Your Life</span></h1>
           <p>
             Stop drowning in chaos. SuperTodo helps you capture ideas, 

@@ -12,6 +12,7 @@ router.post('/register', async (req, res) => {
     console.log("Incoming Registration Request:", req.body);
 
     const { name, email, password } = req.body;
+    console.log("Register Attempt for:", email);
 
     try {
         // 2. Check if user already exists

@@ -49,5 +49,31 @@ router.delete('/:id', auth, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+// @route    PUT api/todos/:id
+// @desc     Update todo (Mark complete/edit task)
+router.put('/:id', auth, async (req, res) => {
+    const { task, completed } = req.body;
+    const todoFields = {};
+    if (task) todoFields.task = task;
+    if (completed !== undefined) todoFields.completed = completed;
 
+    try {
+        let todo = await Todo.findById(req.params.id);
+        if (!todo) return res.status(404).json({ msg: 'Todo not found' });
+
+        if (todo.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        todo = await Todo.findByIdAndUpdate(
+            req.params.id,
+            { $set: todoFields },
+            { new: true }
+        );
+        res.json(todo);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
 module.exports = router;

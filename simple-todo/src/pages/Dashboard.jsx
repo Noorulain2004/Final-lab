@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // useCallback add kiya
 import axios from 'axios';
 import TodoItem from '../components/TodoItem';
 
@@ -7,49 +7,64 @@ function Dashboard({ token }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // 1. Azure Public IP yahan define karein taake code clean rahe
   const API_BASE_URL = 'http://4.213.157.248:5000/api/todos';
 
+  // Config ko useMemo ya function ke andar hona chahiye taake har render pe naya object na bane
   const config = { headers: { 'x-auth-token': token } };
+
+  // 1. Fetch Todos Logic (Wrapped in useCallback)
+  const fetchTodos = useCallback(async () => {
+    try {
+      const res = await axios.get(API_BASE_URL, config);
+      setTodos(res.data);
+    } catch (err) {
+      console.error("Fetch Error:", err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]); // Token change ho toh hi re-fetch ho
+
+  useEffect(() => {
+    fetchTodos();
+  }, [fetchTodos]);
+
+  // 2. Add Todo
+  const addTodo = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    try {
+      const res = await axios.post(API_BASE_URL, { task: input }, config);
+      setTodos([res.data, ...todos]); // New task at the top
+      setInput('');
+    } catch (err) {
+      alert("Failed to add task");
+    }
+  };
+
+  // 3. Delete Todo
+  const deleteTodo = async (id) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/${id}`, config);
+      setTodos(todos.filter(t => t._id !== id));
+    } catch (err) {
+      alert("Could not delete task");
+    }
+  };
+
+  // 4. Toggle Complete (Optional but recommended)
+  const toggleComplete = async (id, completed) => {
+    try {
+      // Backend pe PUT route hona zaroori hai iske liye
+      await axios.put(`${API_BASE_URL}/${id}`, { completed: !completed }, config);
+      setTodos(todos.map(t => t._id === id ? { ...t, completed: !completed } : t));
+    } catch (err) {
+      console.error("Update failed");
+    }
+  };
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', day: 'numeric', month: 'long'
   });
-
-  useEffect(() => {
-    fetchTodos();
-  }, []);
-
-  const fetchTodos = async () => {
-    try {
-      // 2. Localhost ko Azure IP se replace kiya
-      const res = await axios.get(API_BASE_URL, config);
-      setTodos(res.data);
-      setLoading(false);
-    } catch (err) {
-      console.log(err);
-      setLoading(false);
-    }
-  };
-
-  const addTodo = async (e) => {
-    e.preventDefault();
-    if (!input.trim()) return; 
-    try {
-      // 3. Localhost ko Azure IP se replace kiya
-      const res = await axios.post(API_BASE_URL, { task: input }, config);
-      setTodos([res.data, ...todos]); 
-      setInput('');
-    } catch (err) { console.error(err); }
-  };
-
-  const deleteTodo = async (id) => {
-    try {
-      // 4. Localhost ko Azure IP se replace kiya
-      await axios.delete(`${API_BASE_URL}/${id}`, config);
-      setTodos(todos.filter(t => t._id !== id));
-    } catch (err) { console.error(err); }
-  };
 
   return (
     <div className="dashboard-container">
@@ -61,7 +76,7 @@ function Dashboard({ token }) {
           </div>
           <div className="task-count">
             <span>{todos.length}</span>
-            <small>Tasks</small>
+            <small>Total</small>
           </div>
         </div>
 
@@ -69,27 +84,24 @@ function Dashboard({ token }) {
           <input 
             value={input} 
             onChange={e => setInput(e.target.value)} 
-            placeholder="What needs to be done today?" 
+            placeholder="What needs to be done?" 
             className="task-input"
           />
-          <button type="submit" className="btn btn-primary add-btn">
-            Add Task ➕
-          </button>
+          <button type="submit" className="btn btn-primary add-btn">Add ➕</button>
         </form>
 
         <div className="task-list-wrapper">
           {loading ? (
-            <p className="loading-text">Loading tasks...</p>
-          ) : todos.length === 0 ? (
-            <div className="empty-state">
-              <span style={{ fontSize: '3rem' }}>🎉</span>
-              <h3>All caught up!</h3>
-              <p>You have no pending tasks. Enjoy your day!</p>
-            </div>
+            <p className="loading-text">Loading...</p>
           ) : (
             <div className="tasks-list">
               {todos.map(todo => (
-                <TodoItem key={todo._id} todo={todo} deleteTodo={deleteTodo} />
+                <TodoItem 
+                  key={todo._id} 
+                  todo={todo} 
+                  deleteTodo={deleteTodo}
+                  toggleComplete={toggleComplete} // Naya prop
+                />
               ))}
             </div>
           )}
