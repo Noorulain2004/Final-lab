@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        const mongoURI = 'mongodb://mongodb-service:27017/my-todo-app';
+        const mongoURI = 'mongodb+srv://Noorulain:zCVYoSyvRxFolQHN@devhive.15ryv5a.mongodb.net/my-todo-app?retryWrites=true&w=majority';
         await mongoose.connect(mongoURI);
         console.log('MongoDB Connected Successfully...');
     } catch (err) {
