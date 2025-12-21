@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const connectDB = async () => {
     try {
       
-        const mongoURI = process.env.MONGO_URI || 'mongodb://mongodb-service:27017/my-todo-app';
+        const mongoURI = 'mongodb+srv://noorulain:<Noair125521@@devhive.15ryv5a.mongodb.net/?appName=Devhive';
         await mongoose.connect(mongoURI);
         console.log('MongoDB Connected Successfully...');
     } catch (err) {
