@@ -2,7 +2,14 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        const mongoURI = 'mongodb+srv://Noorulain:zCVYoSyvRxFolQHN@devhive.15ryv5a.mongodb.net/my-todo-app?retryWrites=true&w=majority';
+        // Hardcoded string ki jagah process.env use karein
+        const mongoURI = process.env.MONGO_URI; 
+        
+        if (!mongoURI) {
+            console.error('Error: MONGO_URI is not defined in .env file');
+            process.exit(1);
+        }
+
         await mongoose.connect(mongoURI);
         console.log('MongoDB Connected Successfully...');
     } catch (err) {

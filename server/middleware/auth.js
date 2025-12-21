@@ -11,8 +11,8 @@ module.exports = function(req, res, next) {
 
     // Verify token
     try {
-        // 'supersecretkey123' wohi key hai jo hum login mein use karenge
-        const decoded = jwt.verify(token, 'supersecretkey123');
+        // process.env.JWT_SECRET use karein
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretkey123');
         req.user = decoded.user;
         next();
     } catch (err) {

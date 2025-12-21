@@ -1,73 +1,70 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
-const User = require('../models/User');
+const Todo = require('../models/Todo');
 
-// @route   POST api/register
-// @desc    Register User
-router.post('/register', async (req, res) => {
-    // 1. Log incoming data to see what frontend is sending
-    console.log("Incoming Registration Request:", req.body);
-
-    const { name, email, password } = req.body;
-    console.log("Register Attempt for:", email);
-
+// @route    GET api/todos
+// @desc     Get user's todos
+router.get('/', auth, async (req, res) => {
     try {
-        // 2. Check if user already exists
-        let user = await User.findOne({ email });
-        if (user) {
-            console.log("Registration Failed: User already exists ->", email);
-            return res.status(400).json({ msg: 'User already exists' });
-        }
-
-        // 3. Create new user object
-        user = new User({ name, email, password });
-        
-        // 4. Password Encryption
-        console.log("Encrypting password for:", email);
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
-        
-        // 5. Save to Database
-        await user.save();
-        console.log("User successfully saved to MongoDB!");
-
-        // 6. JWT Token Return
-        const payload = { user: { id: user.id } };
-        jwt.sign(payload, 'supersecretkey123', { expiresIn: 360000 }, (err, token) => {
-            if (err) {
-                console.error("JWT Signing Error:", err.message);
-                throw err;
-            }
-            res.json({ token });
-        });
-
+        const todos = await Todo.find({ user: req.user.id }).sort({ date: -1 });
+        res.json(todos);
     } catch (err) {
-        // 7. Log the exact error to your terminal
-        console.error("CRITICAL ERROR during registration:", err.message);
-        res.status(500).json({ msg: 'Server Error', error: err.message });
+        console.error(err.message);
+        res.status(500).send('Server Error');
     }
 });
 
-// @route   POST api/login
-// @desc    Login User
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+// @route    POST api/todos
+// @desc     Create a todo
+router.post('/', auth, async (req, res) => {
     try {
-        let user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ msg: 'Invalid Credentials' });
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ msg: 'Invalid Credentials' });
-
-        const payload = { user: { id: user.id } };
-        jwt.sign(payload, 'supersecretkey123', { expiresIn: 360000 }, (err, token) => {
-            if (err) throw err;
-            res.json({ token });
+        const newTodo = new Todo({
+            task: req.body.task,
+            user: req.user.id
         });
+        const todo = await newTodo.save();
+        res.json(todo);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
 
+// @route    PUT api/todos/:id
+// @desc     Update todo (Status toggle)
+router.put('/:id', auth, async (req, res) => {
+    try {
+        let todo = await Todo.findById(req.params.id);
+        if (!todo) return res.status(404).json({ msg: 'Todo not found' });
+
+        // User ownership check
+        if (todo.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        // Toggle completed status
+        todo.completed = req.body.completed !== undefined ? req.body.completed : !todo.completed;
+        await todo.save();
+        res.json(todo);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route    DELETE api/todos/:id
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        const todo = await Todo.findById(req.params.id);
+        if (!todo) return res.status(404).json({ msg: 'Todo not found' });
+
+        if (todo.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        await Todo.findByIdAndDelete(req.params.id);
+        res.json({ msg: 'Todo removed' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
