@@ -1,12 +1,16 @@
+module.exports = connectDB;
+
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        const mongoURI = 'mongodb://localhost:27017/my-todo-app';
+        // 'localhost' ya '127.0.0.1' ko hata kar 'mongodb-service' likhein
+        const mongoURI = 'mongodb://mongodb-service:27017/my-todo-app';
+        
         await mongoose.connect(mongoURI);
         console.log('MongoDB Connected Successfully...');
     } catch (err) {
-        console.error(err.message);
+        console.error('Database Connection Error:', err.message);
         process.exit(1);
     }
 };
