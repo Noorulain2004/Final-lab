@@ -7,9 +7,11 @@ function Dashboard({ token }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // 1. Azure Public IP yahan define karein taake code clean rahe
+  const API_BASE_URL = 'http://4.213.157.248:5000/api/todos';
+
   const config = { headers: { 'x-auth-token': token } };
 
-  // Date format karne ke liye helper
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', day: 'numeric', month: 'long'
   });
@@ -20,7 +22,8 @@ function Dashboard({ token }) {
 
   const fetchTodos = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/todos', config);
+      // 2. Localhost ko Azure IP se replace kiya
+      const res = await axios.get(API_BASE_URL, config);
       setTodos(res.data);
       setLoading(false);
     } catch (err) {
@@ -31,17 +34,19 @@ function Dashboard({ token }) {
 
   const addTodo = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return; // Empty spaces rokne ke liye
+    if (!input.trim()) return; 
     try {
-      const res = await axios.post('http://localhost:5000/api/todos', { task: input }, config);
-      setTodos([res.data, ...todos]); // Naya task sabse upar add karo
+      // 3. Localhost ko Azure IP se replace kiya
+      const res = await axios.post(API_BASE_URL, { task: input }, config);
+      setTodos([res.data, ...todos]); 
       setInput('');
     } catch (err) { console.error(err); }
   };
 
   const deleteTodo = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/todos/${id}`, config);
+      // 4. Localhost ko Azure IP se replace kiya
+      await axios.delete(`${API_BASE_URL}/${id}`, config);
       setTodos(todos.filter(t => t._id !== id));
     } catch (err) { console.error(err); }
   };
@@ -49,8 +54,6 @@ function Dashboard({ token }) {
   return (
     <div className="dashboard-container">
       <div className="dashboard-content">
-        
-        {/* --- HEADER SECTION --- */}
         <div className="dash-header">
           <div>
             <h1>My Tasks</h1>
@@ -62,7 +65,6 @@ function Dashboard({ token }) {
           </div>
         </div>
 
-        {/* --- INPUT SECTION --- */}
         <form onSubmit={addTodo} className="add-task-form">
           <input 
             value={input} 
@@ -75,7 +77,6 @@ function Dashboard({ token }) {
           </button>
         </form>
 
-        {/* --- TASKS LIST --- */}
         <div className="task-list-wrapper">
           {loading ? (
             <p className="loading-text">Loading tasks...</p>
@@ -93,7 +94,6 @@ function Dashboard({ token }) {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

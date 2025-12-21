@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom'; // Link import kiya navigation ke liye
+import { Link } from 'react-router-dom';
 
 function Login({ setAuth }) {
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState(''); // Error message ke liye
-  const [loading, setLoading] = useState(false); // Loading state ke liye
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -13,10 +13,12 @@ function Login({ setAuth }) {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/login', formData);
+      // 1. Localhost ko badal kar Azure Public IP set kiya
+      const res = await axios.post('http://4.213.157.248:5000/api/login', formData);
       setAuth(res.data.token);
     } catch (err) {
-      // Server se error message mile to wo dikhao, warna default message
+      // 2. Browser console mein error check karne ke liye
+      console.error("Login Error:", err);
       setError(err.response?.data?.msg || 'Invalid Email or Password');
     } finally {
       setLoading(false);
@@ -31,7 +33,6 @@ function Login({ setAuth }) {
           <p>Login to access your tasks.</p>
         </div>
 
-        {/* Error Alert */}
         {error && <div className="error-msg">{error}</div>}
 
         <form onSubmit={handleSubmit}>
