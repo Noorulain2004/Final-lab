@@ -2,13 +2,11 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        // Password "Noair@125521" ko "Noair%40125521" likha hai
-        const mongoURI = 'mongodb+srv://noorulain:Noair%40125521@devhive.15ryv5a.mongodb.net/todoapp?retryWrites=true&w=majority&appName=Devhive';
-        
+        const mongoURI = process.env.MONGO_URI || 'mongodb://mongodb-service:27017/my-todo-app';
         await mongoose.connect(mongoURI);
-        console.log('MongoDB Atlas Connected Successfully...');
+        console.log('MongoDB Connected Successfully...');
     } catch (err) {
-        console.error('Database Connection Error:', err.message);
+        console.error(err.message);
         process.exit(1);
     }
 };
